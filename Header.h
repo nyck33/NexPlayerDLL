@@ -7,53 +7,31 @@
 #define EXPORT __declspec(dllimport)
 #endif
 
-class PauseResumeTracker {
+enum class playState { paused = 0, playing };
+int onPlayPauseTime;
+int numPauseResumed;
 
-public:
+//struct-like class
+
+//class PausePlayTracker 
+//{
+//public:
+//	playState state = playState::paused;
+
+//};
+
+//initial state is waiting
+//playState state = playState::playing;
+/*
+typedef struct _PlayPauseTracker
+{
 	int onPlayPauseTime;
-	int lastPauseResumed;
 	int numPauseResumed;
-	enum class playState { waiting = 0, paused, playing };
-	playState state;
+} PlayPauseTracker;
+*/
 
-	void setLastPR(int timestamp) {
-		lastPauseResumed = timestamp;
-	}
-	
-	int getLastPR(){
-		return lastPauseResumed;
-	}
-	
-	void incrementNumPR() {
-		if (numPauseResumed == NULL) {
-			numPauseResumed = 0;
-		}
-		else {
-			numPauseResumed++;
-		}
-	}
-	
-	int getNumPR() {
-		return numPauseResumed;
-	}
-
-	//parameters/ return values for playState are ints
-	//so they can be called in C#
-	void setPlayState(int newState){
-		//newState is 0/1/2
-		state = static_cast<playState>(newState);
-	}
-
-	int getPlayState() {
-		return static_cast<int>(state);
-	}
-
-	//int Foo(int a); //placeholder
-};
-
-extern "C" EXPORT PauseResumeTracker* createNewPauseResumeTracker();
 extern "C" EXPORT void OnPlayPause(int current_playback_time);
-extern "C" EXPORT int GetNubmerOfPlayPauseEvents();
+extern "C" EXPORT int GetNumberOfPlayPauseEvents();
 extern "C" EXPORT int GetLastPlayPauseTimestamp();
 
 

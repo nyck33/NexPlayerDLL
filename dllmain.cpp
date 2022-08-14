@@ -1,96 +1,55 @@
+//pause time = resume time, start where paused
 #include "pch.h"
-//#include <utility>
-//#include <limits.h>
 #include "Header.h"
 
-void PauseResumeTracker::setLastPR(int timestamp) {
-    /*
-    * transform int timestamp to int
-    */
-	lastPauseResumed = timestamp;
-}
+playState state = playState::playing;
 
-int PauseResumeTracker::getLastPR() {
-	return lastPauseResumed;
-}
-
-void PauseResumeTracker::incrementNumPR() {
-	if (numPauseResumed == NULL) {
-		numPauseResumed = 0;
-	}
-	else {
-		numPauseResumed++;
-	}
-}
-
-int PauseResumeTracker::getNumPR() {
-	return numPauseResumed;
-}
-
-//parameters/ return values for playState are ints
-//so they can be called in C#
-void PauseResumeTracker::setPlayState(int newState) {
-	//newState is 0/1/2
-	state = static_cast<playState>(newState);
-}
-
-int PauseResumeTracker::getPlayState() {
-	return static_cast<int>(state);
-}
-
-//in lieu of constructor
-EXPORT PauseResumeTracker* createNewPauseResumeTracker() {
-    PauseResumeTracker* pauseResumeTracker = new PauseResumeTracker();
-    pauseResumeTracker->setLastPR(0);
-    pauseResumeTracker->incrementNumPR();
-    pauseResumeTracker->setPlayState(0);
-    
-    return pauseResumeTracker;
-}
-
-EXPORT void OnPlayPause(PauseResumeTracker* instance, int current_playback_time) {
+EXPORT void OnPlayPause(int current_playback_time) {
     /*timestamp of video time when player was last paused 
     / resumed
     */
-    switch (instance->state) {
-    case PauseResumeTracker::playState::waiting: {
-        instance->setPlayState(2);
-        instance->numPauseResumed++;
-        instance->onPlayPauseTime = current_playback_time;
-        break;
+    //reset onPlayPauseTime to 0 if called in Start 
+    //of Unity code
+    if (current_playback_time == 0) {
+        onPlayPauseTime = 0;
+        numPauseResumed = 0;
+        return;
     }
-    case PauseResumeTracker::playState::paused: {
-        instance->setPlayState(2);
-        instance->numPauseResumed++;
-        instance->onPlayPauseTime = current_playback_time;
-        break;
-    }
-    case PauseResumeTracker::playState::playing: {
-        instance->setPlayState(1);
-        instance->numPauseResumed++;
-        instance->onPlayPauseTime = current_playback_time;
-        break;
-    }
+    switch (state) {
+        
+        case playState::paused: {
+            state = playState::playing;
+            numPauseResumed++;
+            onPlayPauseTime = current_playback_time;
+            break;
+        }
+        case playState::playing: {
+            state = playState::paused;
+            numPauseResumed++;
+            onPlayPauseTime = current_playback_time;
+            break;
+        }
         
 
     }
 
 }
 
-int GetNumberOfPlayPauseEvents(PauseResumeTracker* instance) {
+//these two get called on Update()
+int GetNumberOfPlayPauseEvents() {
     /*
     * return num times player has been paused / resumed
     state machine for paused, playing, 
     */
     
-    return instance->getNumPR();
+    return numPauseResumed;
 }
 
 int GetLastPlayPauseTimestamp() {
     /*
-    * return the last play
+    * return the last pause resume time
     */
-    return 0;
+    return onPlayPauseTime;
 }
 
 
